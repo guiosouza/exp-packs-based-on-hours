@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Sorteio de Packs</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      label {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Sistema de Sorteio de Packs</h2>
+    <form id="packsForm">
+      <label for="runtime">Tempo de execução (horas:minutos):</label>
+      <input
+        type="text"
+        id="runtime"
+        name="runtime"
+        placeholder="Exemplo: 2:12"
+        required
+      />
+      <br /><br />
+      <label for="multiplier">Multiplicador:</label>
+      <input
+        type="number"
+        id="multiplier"
+        name="multiplier"
+        min="1"
+        value="1"
+        required
+      />
+      <br /><br />
+      <button type="submit">Calcular</button>
+    </form>
+    <div id="results" style="display: none">
+      <h3>Resultado do Sorteio</h3>
+      <p id="resultText"></p>
+      <p id="winningNumbers" style="display: none">
+        <strong>Números ganhadores:</strong> <span id="numbersList"></span>
+      </p>
+      <p id="totalNumbers" style="display: none">
+        <strong>Total de números sorteados:</strong>
+        <span id="totalCount"></span>
+      </p>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const runtimeInput = document.getElementById("runtime");
+        const numbersList = document.getElementById("numbersList");
+
+        runtimeInput.addEventListener("input", function () {
+          let value = this.value.trim();
+          value = value.replace(/[^0-9:]/g, ""); // Remove caracteres não numéricos e não ':'
+
+          // Adiciona ':' automaticamente quando digita os números
+          if (value.length === 3 && !value.includes(":")) {
+            value = value.slice(0, 2) + ":" + value.slice(2);
+          } else if (value.length >= 4 && value.includes(":")) {
+            value = value.slice(0, 5); // Limita a 5 caracteres no total
+          }
+
+          this.value = value;
+        });
+      });
+
+      document
+        .getElementById("packsForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          // Obter os valores digitados
+          let runtimeInput = document.getElementById("runtime").value.trim();
+          let multiplierInput = parseInt(
+            document.getElementById("multiplier").value
+          );
+
+          // Validar e processar o tempo de execução
+          let runtimeParts = runtimeInput.split(":");
+          if (runtimeParts.length !== 2) {
+            alert(
+              "Formato inválido para o tempo de execução. Use horas:minutos, por exemplo, 2:12."
+            );
+            return;
+          }
+          let hours = parseInt(runtimeParts[0]);
+          let minutes = parseInt(runtimeParts[1]);
+
+          if (isNaN(hours) || isNaN(minutes)) {
+            alert(
+              "Formato inválido para o tempo de execução. Use apenas números para horas e minutos."
+            );
+            return;
+          }
+
+          // Calcular o número de packs
+          let totalMinutes = hours * 60 + minutes;
+          let packs = Math.floor(totalMinutes / 10) * multiplierInput;
+
+          // Realizar o sorteio
+          let winCount = 0;
+          let winningNumbers = [];
+          for (let i = 0; i < packs; i++) {
+            // Sorteio com 50% de chance de ganhar
+            if (Math.random() < 0.5) {
+              winCount++;
+              winningNumbers.push(i + 1); // Adiciona o número ganhador (1-indexed) à lista
+            }
+          }
+
+          // Exibir os resultados
+          let resultText = `Com ${hours}:${minutes} horas de execução, você ganhou ${winCount} packs de EXP na tarefa.`;
+          document.getElementById("resultText").innerText = resultText;
+          document.getElementById("results").style.display = "block";
+
+          // Mostrar os números ganhadores, se houver
+          if (winningNumbers.length > 0) {
+            document.getElementById("winningNumbers").style.display = "block";
+            document.getElementById("numbersList").innerText =
+              winningNumbers.join(", ");
+          }
+
+          // Mostrar o total de números sorteados
+          document.getElementById("totalNumbers").style.display = "block";
+          document.getElementById("totalCount").innerText = packs;
+        });
+    </script>
+  </body>
+</html>
